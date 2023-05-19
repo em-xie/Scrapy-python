@@ -84,7 +84,6 @@ class RandomProxyMiddleware(object):
         request.meta["proxy"] = get_ip.get_random_ip()
 
 
-from selenium import webdriver
 from scrapy.http import HtmlResponse
 
 
