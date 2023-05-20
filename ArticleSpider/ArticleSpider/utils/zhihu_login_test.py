@@ -13,6 +13,7 @@ import undetected_chromedriver as uc
 from undetected_chromedriver import By
 
 
+
 def get_slide_locus(distance):
     # 计算出一个滑动轨迹
     distance += 8
@@ -252,6 +253,8 @@ class Login(object):
         submit.click()
         time.sleep(3)
 
+
+
         k = 1
         # while True:
         while k < self.retry:
@@ -330,56 +333,80 @@ class Login(object):
         submit.click()
         time.sleep(3)
 
-        k = 1
-        # while True:
-        while k < self.retry:
-            # 获取滑动前页面的url网址
-            # 1. 获取原图
+        k = 1;
+        while (k < 100):
+            k = k + 1
             bg_img = self.wait.until(
-                Ec.presence_of_element_located((By.CSS_SELECTOR, '.yidun_bgimg .yidun_bg-img'))
-            )
-            # 获取滑块链接
-            # front_img = self.wait.until(
-            #     Ec.presence_of_element_located(
-            #         (By.CSS_SELECTOR, "#cdn2")))
-            front_img = self.wait.until(
-                Ec.presence_of_element_located((By.CSS_SELECTOR, '.yidun_bgimg .yidun_jigsaw'))
-            )
-
-            # 获取验证码滑动距离
-            distance = self.sli.get_element_slide_distance(front_img, bg_img)
-            print('滑动距离是', distance)
-
-            # 2. 乘缩放比例， -去  滑块前面的距离  下面给介绍
-            distance = distance - 4
-            print('实际滑动距离是', distance)
-
-            # 滑块对象
-            element = self.browser.find_element(By.CSS_SELECTOR,
-                                                '.yidun_slider')
-            # 滑动函数
-            slide_verification(self.browser, element, distance)
-
-            # 滑动之后的url链接
-            time.sleep(5)
-            # 登录框
+                    Ec.presence_of_element_located((By.CSS_SELECTOR, '.yidun_bgimg .yidun_bg-img')))
+            background_url = bg_img.get_attribute('src')
+            path = "E:\zhihu\{}.jpg".format(random.randint(0,k))
             try:
-                submit = self.wait.until(
-                    Ec.element_to_be_clickable((By.CSS_SELECTOR, '.Button.SignFlow-submitButton'))
-                )
-                submit.click()
-                time.sleep(3)
-            except:
-                pass
-
-            end_url = self.browser.current_url
-            print(end_url)
-
-            if end_url == "https://www.zhihu.com/":
-                return self.get_cookies()
+                response = requests.get(background_url)
+            except Exception as e:
+                print('图片下载失败')
+                raise e
             else:
-                time.sleep(3)
-                k += 1
+                with open(path, 'wb') as f:
+                    f.write(response.content)
+                    f.close()
+            time.sleep(3)
+            # submit = self.wait.until(
+            #     Ec.element_to_be_clickable((By.CSS_SELECTOR, '.Button.yidun_refresh'))
+            # )
+            # submit.click()
+            self.browser.find_element(By.CSS_SELECTOR,
+                                      'body > div.yidun_popup--light.yidun_popup.yidun_popup--size-small > div.yidun_modal__wrap > div > div > div.yidun_modal__body > div > div.yidun_panel > div > div.yidun_top > div > button.yidun_refresh').click()
+            time.sleep(3)
+        # k = 1
+        # # while True:
+        # while k < self.retry:
+        #     # 获取滑动前页面的url网址
+        #     # 1. 获取原图
+        #     bg_img = self.wait.until(
+        #         Ec.presence_of_element_located((By.CSS_SELECTOR, '.yidun_bgimg .yidun_bg-img'))
+        #     )
+        #     # 获取滑块链接
+        #     # front_img = self.wait.until(
+        #     #     Ec.presence_of_element_located(
+        #     #         (By.CSS_SELECTOR, "#cdn2")))
+        #     front_img = self.wait.until(
+        #         Ec.presence_of_element_located((By.CSS_SELECTOR, '.yidun_bgimg .yidun_jigsaw'))
+        #     )
+        #
+        #     # 获取验证码滑动距离
+        #     distance = self.sli.get_element_slide_distance(front_img, bg_img)
+        #     print('滑动距离是', distance)
+        #
+        #     # 2. 乘缩放比例， -去  滑块前面的距离  下面给介绍
+        #     distance = distance - 4
+        #     print('实际滑动距离是', distance)
+        #
+        #     # 滑块对象
+        #     element = self.browser.find_element(By.CSS_SELECTOR,
+        #                                         '.yidun_slider')
+        #     # 滑动函数
+        #     slide_verification(self.browser, element, distance)
+        #
+        #     # 滑动之后的url链接
+        #     time.sleep(5)
+        #     # 登录框
+        #     try:
+        #         submit = self.wait.until(
+        #             Ec.element_to_be_clickable((By.CSS_SELECTOR, '.Button.SignFlow-submitButton'))
+        #         )
+        #         submit.click()
+        #         time.sleep(3)
+        #     except:
+        #         pass
+        #
+        #     end_url = self.browser.current_url
+        #     print(end_url)
+        #
+        #     if end_url == "https://www.zhihu.com/":
+        #         return self.get_cookies()
+        #     else:
+        #         time.sleep(3)
+        #         k += 1
 
         return None
 

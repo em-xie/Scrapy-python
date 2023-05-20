@@ -259,7 +259,7 @@ class Login(object):
             self.sli.onload_save_img(background_url, backgroup)
 
             # 获取验证码滑动距离
-            baidu = BaiDuLogin("d0SWmXg9td3463yr5Up3RYhG", "VlqbdG99Wal8Wb6zH4DkFgwLQt2ey9cF")
+            baidu = BaiDuLogin("xxxx", "xxxx")
             distance = baidu.recongnize(baidu.get_access_token(), backgroup)
             print('滑动距离是', distance)
 
@@ -268,8 +268,7 @@ class Login(object):
             print('实际滑动距离是', distance)
 
             # 滑块对象
-            element = self.browser.find_element_by_css_selector(
-                '.yidun_slider')
+            element = self.browser.find_element(By.CSS_SELECTOR,'.yidun_slider')
             # 滑动函数
             self.sli.slide_verification(self.browser, element, distance)
 
@@ -390,9 +389,9 @@ class Login(object):
             self.cookies += '{}={};'.format(cookie.get('name'), cookie.get('value'))
         return cookies
 
-    def __del__(self):
-        self.browser.close()
-        print('界面关闭')
+    # def __del__(self):
+    #     self.browser.close()
+    #     print('界面关闭')
         # self.display.stop()
 
 class BaiDuLogin():
@@ -405,8 +404,13 @@ class BaiDuLogin():
 
         # client_id 为官网获取的AK， client_secret 为官网获取的SK
         host = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id={}&client_secret={}'.format(self.ak, self.sk)
-        response = requests.get(host)
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        response = requests.post(host,headers=headers)
         if response.status_code == 200:
+            # print(response.json()["access_token"])
             return response.json()["access_token"]
         return None
 
@@ -418,18 +422,25 @@ class BaiDuLogin():
         easydl物体检测
         '''
 
-        request_url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/detection/zhihu"
+        request_url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/detection/em-xie"
 
         with open(image_file, 'rb') as f:
             base64_data = base64.b64encode(f.read())
             s = base64_data.decode('UTF8')
-
-        params = {"image": s}
-        params = json.dumps(params)
-        request_url = request_url + "?access_token=" + access_token
+        # 可选的请求参数
+        # threshold: 默认值为建议阈值，请在 我的模型-模型效果-完整评估结果-详细评估 查看建议阈值
+        PARAMS = {"threshold": 0.3}
+        PARAMS["image"] = s
+        # params = json.dumps(PARAMS)
+        if not access_token:
+            print("2. ACCESS_TOKEN 为空，调用鉴权接口获取TOKEN")
+        else:
+            request_url = request_url + "?access_token=" + access_token
+            # print(request_url)
         headers = {'Content-Type': 'application/json'}
-        response = requests.post(request_url, headers=headers, data=params)
+        response = requests.post(url=request_url, json=PARAMS)
         re_json = response.json()
+        print(re_json)
         if "results" not in re_json:
             return None
         if len(response.json()["results"]) == 0:
@@ -438,10 +449,11 @@ class BaiDuLogin():
             return None
         return response.json()["results"][0]["location"]["left"]
 
-if __name__ == "__main__":
-    #opencv识别滑动验证码可能失败， 机器学习识别概率很高
-    l = Login("18782902020", "admin23", 6)
-    cookie = l.login_baidu()
+# if __name__ == "__main__":
+    # opencv识别滑动验证码可能失败， 机器学习识别概率很高
+    # l = Login("18782902020", "admin23", 6)
+    # cookie = l.login_baidu()
 
-    # baidu = BaiDuLogin("d0SWmXg9td3463yr5Up3RYhG", "VlqbdG99Wal8Wb6zH4DkFgwLQt2ey9cF")
-    # print(baidu.recongnize(baidu.get_access_token(), "slide.jpg"))
+    # baidu = BaiDuLogin("xxxxx", "xxxxx")
+    # baidu.get_access_token();
+    # print(baidu.recongnize(baidu.get_access_token(), "0.jpg"))
