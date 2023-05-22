@@ -389,9 +389,9 @@ class Login(object):
             self.cookies += '{}={};'.format(cookie.get('name'), cookie.get('value'))
         return cookies
 
-    # def __del__(self):
-    #     self.browser.close()
-    #     print('界面关闭')
+    def __del__(self):
+        self.browser.close()
+        print('界面关闭')
         # self.display.stop()
 
 class BaiDuLogin():

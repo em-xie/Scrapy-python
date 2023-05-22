@@ -22,16 +22,11 @@ from w3lib.html import remove_tags
 
 import MySQLdb
 import MySQLdb.cursors
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
 
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
-
-class ArticlespiderPipeline:
+class ArticlespiderPipeline(object):
     def process_item(self, item, spider):
         return item
+
 
 class JsonWithEncodingPipeline(object):
     #自定义json文件的导出
@@ -44,30 +39,6 @@ class JsonWithEncodingPipeline(object):
     def spider_closed(self, spider):
         self.file.close()
 
-class JsonExporterPipleline(object):
-    #调用scrapy提供的json export导出json文件
-    def __init__(self):
-        self.file = open('articleexport.json', 'wb')
-        self.exporter = JsonItemExporter(self.file, encoding="utf-8", ensure_ascii=False)
-        self.exporter.start_exporting()
-
-    def close_spider(self, spider):
-        self.exporter.finish_exporting()
-        self.file.close()
-
-    def process_item(self, item, spider):
-        self.exporter.export_item(item)
-        return item
-
-
-class ArticleImagePipeline(ImagesPipeline):
-    def item_completed(self, results, item, info):
-        if "front_image_url" in item:
-            for ok, value in results:
-                image_file_path = value["path"]
-            item["front_image_path"] = image_file_path
-
-        return item
 
 class MysqlPipeline(object):
     #采用同步的机制写入mysql
@@ -119,3 +90,39 @@ class MysqlTwistedPipline(object):
         #根据不同的item 构建不同的sql语句并插入到mysql中
         insert_sql, params = item.get_insert_sql()
         cursor.execute(insert_sql, params)
+
+
+class JsonExporterPipleline(object):
+    #调用scrapy提供的json export导出json文件
+    def __init__(self):
+        self.file = open('articleexport.json', 'wb')
+        self.exporter = JsonItemExporter(self.file, encoding="utf-8", ensure_ascii=False)
+        self.exporter.start_exporting()
+
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.file.close()
+
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        return item
+
+
+class ArticleImagePipeline(ImagesPipeline):
+    def item_completed(self, results, item, info):
+        if "front_image_url" in item:
+            for ok, value in results:
+                image_file_path = value["path"]
+            item["front_image_path"] = image_file_path
+
+        return item
+
+
+# class ElasticsearchPipeline(object):
+#     #将数据写入到es中
+#
+#     def process_item(self, item, spider):
+#         #将item转换为es的数据
+#         item.save_to_es()
+#
+#         return item
